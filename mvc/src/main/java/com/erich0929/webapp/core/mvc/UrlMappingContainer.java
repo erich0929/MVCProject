@@ -7,6 +7,8 @@ import java.net.URLClassLoader;
 import java.net.URLStreamHandler;
 import java.util.Hashtable;
 
+import javax.servlet.http.*;
+
 import java.util.ArrayList;
 import java.io.File;
 
@@ -87,10 +89,19 @@ public class UrlMappingContainer {
 		
 	}
 	
-	public void dispatche (String url) {
+	public String dispatch (String url, HttpServletRequest req, HttpServletResponse res) {
 		Pair pair = (Pair) classTable.get(url);
 		Class klass = pair.klass;
 		Method function = pair.function;
 		System.out.println ("class : " + klass.getName () + ",  " + "method : " + function.getName ());
+		String logicalView = null;
+		try {
+			Object instance = klass.newInstance ();
+			logicalView = (String) function.invoke (instance, req, res);
+			
+		} catch (Exception e) {
+			e.printStackTrace ();
+		}
+		return logicalView;
 	}
 }
