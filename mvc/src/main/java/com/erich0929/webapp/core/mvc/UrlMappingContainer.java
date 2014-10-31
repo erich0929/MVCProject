@@ -13,10 +13,35 @@ import java.util.ArrayList;
 import java.io.File;
 
 public class UrlMappingContainer {
-	public class Pair {
+	public class KeyPair {
+		public String urlPath;
+		public String requestMethod;
+		public KeyPair (String urlPath, String requestMethod) {
+			this.urlPath = urlPath;
+			this.requestMethod = requestMethod;
+		}
+		
+		@Override
+		public int hashCode () {
+			return (urlPath + requestMethod).hashCode(); 
+		}
+		
+		@Override
+		public boolean equals (Object obj) {
+			if (obj instanceof KeyPair) {
+				KeyPair o = (KeyPair) obj;
+				return (this.urlPath.equals(o.urlPath) && 
+						this.requestMethod.equals(o.requestMethod));
+			}
+			return false;
+		}
+	}
+	
+	
+	public class ValuePair {
 		public Class  klass;
 		public Method function;
-		public Pair (Class klass, Method function) {
+		public ValuePair (Class klass, Method function) {
 			this.klass = klass;
 			this.function = function;
 		}
@@ -62,20 +87,21 @@ public class UrlMappingContainer {
 					if ((controllerAnno = (Controller) klass.getAnnotation(Controller.class)) != null) {
 						/* TODO : process requestMapping  */
 						System.out.println ("Controller class found : "+ klass.getName());
-						String controllerUrl = controllerAnno.url ();
+						String controllerUrl = controllerAnno.value ();
 						Method [] methods = klass.getMethods();
 						for (Method function : methods) {
 							//System.out.println ("method name : " + function.getName ());
 							//System.out.println ("has anno : " + (function.getAnnotation(RequestMapping.class) != null));
 							if ((methodAnno = function.getAnnotation(RequestMapping.class)) != null) {
 								System.out.println ("RequestMapping method found : " + function.getName());
-								String methodUrl = methodAnno.url ();
+								String methodUrl = methodAnno.value ();
+								String requestMethod = methodAnno.method();
 								if (methodUrl.equals("")) {
 									// THROW EXCEPTION.
 								} else {
 									String fullUrl = "/" + webappPath.substring (0, webappPath.lastIndexOf("/")) + controllerUrl + methodUrl;
-									classTable.put(fullUrl, new Pair (klass, function));
-									System.out.println ("URL : " + fullUrl + ", " + "klass : " + klass.getName() + 
+									classTable.put(new KeyPair (fullUrl, requestMethod), new ValuePair (klass, function));
+									System.out.println ("URL : " + fullUrl + ", RequestMethod : " + requestMethod + ", klass : " + klass.getName() + 
 											", "  + "method : " +  function.getName());
 								}
 							}
@@ -90,7 +116,9 @@ public class UrlMappingContainer {
 	}
 	
 	public String dispatch (String url, HttpServletRequest req, HttpServletResponse res) {
-		Pair pair = (Pair) classTable.get(url);
+		System.out.println ("UrlMappingContainer.dispatch : ");
+		System.out.println ("let' find a KeyPair : " + url + ", " + req.getMethod ());
+		ValuePair pair = (ValuePair) classTable.get(new KeyPair (url, req.getMethod()));
 		Class klass = pair.klass;
 		Method function = pair.function;
 		System.out.println ("class : " + klass.getName () + ",  " + "method : " + function.getName ());
