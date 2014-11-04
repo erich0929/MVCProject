@@ -1,11 +1,14 @@
 package com.erich0929.webapp.core.mvc;
 
 import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletContext;
+
+
 
 import java.io.PrintWriter;
 /**
@@ -27,11 +30,19 @@ public class DispatcherServlet extends HttpServlet {
 	 */
     @Override
     public void init () {
-    	UrlMappingContainer container = new UrlMappingContainer ("simlpeDispatcher", "com.erich0929.controller");
-		ViewResolver resolver = new ViewResolver ();
     	ServletContext context = getServletContext ();
+    	String webappname = context.getContextPath();
+    	webappname = webappname.substring(1, webappname.length());
+    	System.out.println ("Webappname : " + webappname);
+    	
+    	String controllerPackage = context.getInitParameter("Controller-package");
+    	System.out.println ("Controller-package : " + controllerPackage);
+    	UrlMappingContainer container = new UrlMappingContainer (webappname, controllerPackage);
+		ViewResolver resolver = new ViewResolver ();
+
     	context.setAttribute("container", container);
     	context.setAttribute("resolver", resolver);
+    	
     	
     }
     
@@ -41,7 +52,11 @@ public class DispatcherServlet extends HttpServlet {
 		UrlMappingContainer container = (UrlMappingContainer) context.getAttribute("container");
 		ViewResolver resolver = (ViewResolver) context.getAttribute("resolver");
 		String view = container.dispatch (request.getRequestURI(), request, response);
-		resolver.resolve(view, request, response);
+		if (view == null) {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND);
+		} else {
+			resolver.resolve(view, request, response);
+		}
 	}
 
 	/**

@@ -119,6 +119,10 @@ public class UrlMappingContainer {
 		System.out.println ("UrlMappingContainer.dispatch : ");
 		System.out.println ("let' find a KeyPair : " + url + ", " + req.getMethod ());
 		ValuePair pair = (ValuePair) classTable.get(new KeyPair (url, req.getMethod()));
+		//System.out.println ("value pair is null? : " + (pair == null));
+		if (pair == null) {
+			return null;
+		}
 		Class klass = pair.klass;
 		Method function = pair.function;
 		System.out.println ("class : " + klass.getName () + ",  " + "method : " + function.getName ());

@@ -18,7 +18,7 @@ public class ViewResolver {
 	}
 	public void resolve (String view, HttpServletRequest req, HttpServletResponse res) {
 		try {	
-			req.getRequestDispatcher(rootPath + view).forward(req, res);
+			req.getRequestDispatcher(rootPath +view).forward (req, res);
 		} catch (Exception e) {
 			e.printStackTrace ();
 		}
