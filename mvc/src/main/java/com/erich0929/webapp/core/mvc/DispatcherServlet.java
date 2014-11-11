@@ -64,6 +64,17 @@ public class DispatcherServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
+		ServletContext context = getServletContext ();
+		UrlMappingContainer container = (UrlMappingContainer) context.getAttribute("container");
+		ViewResolver resolver = (ViewResolver) context.getAttribute("resolver");
+		String view = container.dispatch (request.getRequestURI(), request, response);
+		if (view == null) {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND);
+		} else if (view == ""){
+			/* nothing to do */
+		} else {
+			resolver.resolve(view, request, response);
+		}
 	}
 
 }
